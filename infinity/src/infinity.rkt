@@ -82,14 +82,35 @@
 ;; não existe na solução.
 (define (seguro? bloco solucao tam) #f)
 
-
 ;; String -> Jogo
 ;; Faz a leitura e processa um jogo armazenado em arquivo.
 ;; Exemplo: (ler-jogo "testes/5.txt")
 ;;          > '((0 6 6 1) (12 15 15 6) (1 10 10 0) (0 2 1 0))
-(define (ler-jogo arquivo) '())
-;; Dica: procure pelas funções pré-definidas open-input-file e port->lines
+(define (ler-jogo arquivo) ;;para cada item da lista eu vejo qual carater é e enfio na lista nova
+  (transforma-para-numero(transforma-para-lista-char(port->lines(open-input-file arquivo)))))
 
+(define (transforma-para-lista-char lst)
+  (cond
+    [(empty? lst) empty]
+    [else (cons (string->list (first lst))
+                (transforma-para-lista-char (rest lst)))]))
+
+(define (transforma-para-numero lst)
+  (cond
+    [(empty? lst) empty]
+    [(list? (first lst))
+     (cons (transforma-para-numero (first lst))
+           (transforma-para-numero (rest lst)))]
+    [else
+     (cons (substitui-pelo-num (first lst) blocos-reps 0)
+           (transforma-para-numero (rest lst)))]))
+
+(define (substitui-pelo-num char blocos-reps n)
+  (cond
+    [(equal? (first blocos-reps) char) n]
+    [else (substitui-pelo-num char (rest blocos-reps) (add1 n))]))
+
+;; Dica: procure pelas funções pré-definidas open-input-file e port->lines
 
 ;; Jogo -> void
 ;; Escreve o jogo na tela codificado em caracteres.
