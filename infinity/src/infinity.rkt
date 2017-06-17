@@ -31,6 +31,15 @@
 ;;    largura : Número - quantidade de colunas do jogo.
 (struct tamanho (altura largura) #:transparent)
 
+(define (game-heigth lista-jogo)
+  (cond
+    [(empty? lista-jogo) 0]
+    [else (length lista-jogo)]))
+
+(define (game-width lista-jogo)
+  (cond
+    [(empty? lista-jogo) 0]
+    [else (length (first lista-jogo))]))
 
 ;; Bloco -> Bloco
 ;; --------------
@@ -155,5 +164,10 @@
 ;; forma de caracteres. Caso o jogo não possua solução, nada deve ser escrito na
 ;; tela.
 (define (main args)
-  (display args))
+  ;;(display args)
+  (define lista-jogo (ler-jogo args))
+  (define tam (tamanho (game-heigth lista-jogo) (game-width lista-jogo)))
+  (display lista-jogo)
+  (display tam)
+)
 
