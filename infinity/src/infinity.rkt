@@ -41,13 +41,38 @@
     [(empty? lista-jogo) 0]
     [else (length (first lista-jogo))]))
 
+(define (transforma-binario lst)
+  (cond
+    [(empty? lst) empty]
+    [(list? (first lst))
+     (cons (transforma-binario (first lst))
+           (transforma-binario (rest lst)))]
+    [else
+     (cons (string->list (number->string (first lst) 2))
+           (transforma-binario (rest lst)))]))
+
+(define (transforma-normal lst)
+  (cond
+    [(empty? lst) empty]
+    [(list? (first lst))
+     (cons (transforma-normal (first lst))
+           (transforma-normal (rest lst)))]
+    [else
+     (cons (string->number (first lst) 2)
+           (transforma-normal (rest lst)))]))
+  
 ;; Bloco -> Bloco
 ;; --------------
 ;; Rotaciona um bloco 90 graus em sentido horário
 ;; Exemplo: (rotacionar 5)
 ;;          > 10
-(define (rotacionar bloco) 0)
-
+(define (rotacionar bloco)
+  (define bloco-binario (string->list (number->string bloco 2)))
+  (define zeros-esquerda (- 4 (length bloco-binario)))
+  (define S (for/list([x (in-range 0 zeros-esquerda)])
+            (* 0 x))) 
+  (define lista-bloco-binario (append S bloco-binario))
+  (display lista-bloco-binario))
 
 ;; Bloco Bloco -> Lógico
 ;; ---------------------
@@ -95,7 +120,7 @@
 ;; Faz a leitura e processa um jogo armazenado em arquivo.
 ;; Exemplo: (ler-jogo "testes/5.txt")
 ;;          > '((0 6 6 1) (12 15 15 6) (1 10 10 0) (0 2 1 0))
-(define (ler-jogo arquivo) ;;para cada item da lista eu vejo qual carater é e enfio na lista nova
+(define (ler-jogo arquivo)
   (transforma-para-numero(transforma-para-lista-char(port->lines(open-input-file arquivo)))))
 
 (define (transforma-para-lista-char lst)
@@ -128,8 +153,27 @@
 ;;            ┣┳┫┃
 ;;            ┃┣┻┫
 ;;            ┗┻━┛
-(define (escrever-jogo jogo) void)
+(define (escrever-jogo jogo)
+  (display "hellow"))
 ;; Dica: procure pelas funções pré-definidas list->string e string-join
+
+(define (cria-lista-possibilidades jogo)
+  (cond
+    [(empty? jogo) empty]
+    [(list? (first jogo))
+     (cons (cria-lista-possibilidades (first jogo))
+           (cria-lista-possibilidades (rest jogo)))]
+    [else
+     (cons (cria-possibilidades-bloco (first jogo))
+           (cria-lista-possibilidades (rest jogo)))]))
+
+(define (cria-possibilidades-bloco bloco)
+  (define p1 (rotacionar bloco))
+  (define p2 (rotacionar p1))
+  (define p3 (rotacionar p2))
+  (define p4 (rotacionar p3))
+  (list p1 p2 p3 p4))
+  ;;(cons 1 (cons 2 (cons 3 (cons 4 empty)))))
 
 
 ;; Jogo -> Jogo || #f
@@ -147,7 +191,17 @@
 ;;   (6 15 15 9)     =>   [┏][╋][╋][┛]
 ;;   (1  5  5 0)          [╹][┃][┃][ ]
 ;;   (0  1  1 0))         [ ][╹][╹][ ]
-(define (resolver jogo) #f)
+
+(define (resolver jogo)
+  (display jogo)
+  (define tam (tamanho (game-heigth jogo) (game-width jogo)))
+  (define possibilidades (cria-lista-possibilidades jogo))
+  (display possibilidades)) 
+  ;;(define jogo-binario (transforma-binario jogo)) 
+  ;;(display jogo-binario))
+  ;;(display possibilidades))
+  ;;(define jogo-normal (transforma-normal jogo-binario))
+  ;;(display jogo-normal))
 
 ;; List String -> void
 ;; Esta é a função principal. Esta função é chamada a partir do arquivo
@@ -163,11 +217,19 @@
 ;; A saída desta função é a escrita na tela do jogo resolvido, representado na
 ;; forma de caracteres. Caso o jogo não possua solução, nada deve ser escrito na
 ;; tela.
+;;(define (iter solucao possibilidades)
+  ;;(cond
+    ;;[(empty? possibilidades) solucao]
+    ;;[(empty? (first possibilidades)) #f]
+    ;;[(seguro? (first (first possibilidadades)) solucao tam)
+     ;;(or (iter (adiciona candidato solucao) (remove candidatos possibilidades))
+       ;;  (iter solucao (exclui candidato possibilidades)))]
+    ;;[else (iter solucao (exclui candidato possibilidades))]))
+
 (define (main args)
   ;;(display args)
-  (define lista-jogo (ler-jogo args))
-  (define tam (tamanho (game-heigth lista-jogo) (game-width lista-jogo)))
-  (display lista-jogo)
-  (display tam)
+  (define jogo (ler-jogo args))
+  (define solucao (resolver jogo))
+  (escrever-jogo solucao)
 )
 
