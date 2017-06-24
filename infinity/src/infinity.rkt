@@ -67,12 +67,45 @@
 ;; Exemplo: (rotacionar 5)
 ;;          > 10
 (define (rotacionar bloco)
+  (display (number? bloco))
   (define bloco-binario (string->list (number->string bloco 2)))
+  (display (number? (first bloco-binario)))
   (define zeros-esquerda (- 4 (length bloco-binario)))
   (define S (for/list([x (in-range 0 zeros-esquerda)])
             (* 0 x))) 
   (define lista-bloco-binario (append S bloco-binario))
-  (display lista-bloco-binario))
+  (display lista-bloco-binario)
+  ;;(define rotacionado (append (rest lista-bloco-binario) (first lista-bloco-binario)))
+  (define rotacionado (cons-fim (first lista-bloco-binario) (rest lista-bloco-binario)))
+  ;;(define rotacionado (list 1 0 1 0))
+  (display rotacionado)
+  (display (number? (first rotacionado)))
+  ;;(display (flatten rotacionado))
+  (bin->dec rotacionado))
+
+(define (cons-fim a lst)
+  (cond
+    [(empty? lst) (list a)]
+    [else (cons (first lst)
+                (cons-fim a (rest lst)))]))
+;;acc é o valor acumulado referente ao valor binario em decimal, ja o acc2 é o que guarda o proximo valor da seq binária.
+;; exemplo: (0110) acc = 0, acc2 = 8 (pois da esq p dir o primeiro digito vale 8); acc = 0 acc2 = 4 ..
+(define (bin->dec lst0)
+  (define (iter lst acc acc2)
+    (cond
+      [(empty? lst) acc]
+      [else
+       (cond         
+         [(equal? 0 (first lst))
+          (iter (rest lst) acc (/ acc2 2))]
+         [else
+          (iter (rest lst) (+ acc acc2) (/ acc2 2))])]))
+  (iter lst0 0 8))
+
+;;(define (bin->dec n)
+  ;;(if (zero? n)
+    ;;  n
+      ;;(+ (modulo n 10) (* 2 (bin->dec (quotient n 10))))))
 
 ;; Bloco Bloco -> Lógico
 ;; ---------------------
@@ -161,13 +194,14 @@
   (cond
     [(empty? jogo) empty]
     [(list? (first jogo))
-     (cons (cria-lista-possibilidades (first jogo))
+     (list (cria-lista-possibilidades (first jogo))
            (cria-lista-possibilidades (rest jogo)))]
     [else
-     (cons (cria-possibilidades-bloco (first jogo))
+     (list (cria-possibilidades-bloco (first jogo))
            (cria-lista-possibilidades (rest jogo)))]))
 
 (define (cria-possibilidades-bloco bloco)
+  (display bloco)
   (define p1 (rotacionar bloco))
   (define p2 (rotacionar p1))
   (define p3 (rotacionar p2))
@@ -196,6 +230,7 @@
   (display jogo)
   (define tam (tamanho (game-heigth jogo) (game-width jogo)))
   (define possibilidades (cria-lista-possibilidades jogo))
+  (display possibilidades)
   (display possibilidades)) 
   ;;(define jogo-binario (transforma-binario jogo)) 
   ;;(display jogo-binario))
