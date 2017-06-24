@@ -61,6 +61,16 @@
        [(= bloco 14) 13]
        [(= bloco 15) 15])]))
 
+#|(define (cria-lista-possibilidades-blocos jogo)
+  (cond
+    [(empty? jogo) empty]
+    [(list? (first jogo))
+     (cons (cria-lista-possibilidades-blocos (first jogo))
+           (cria-lista-possibilidades-blocos (rest jogo)))]
+    [else
+     (cons (cria-possibilidades-bloco (first jogo))
+           (cria-lista-possibilidades-blocos (rest jogo)))]))|#
+
 (define (cria-lista-possibilidades-blocos jogo)
   (cond
     [(empty? jogo) empty]
@@ -183,9 +193,26 @@
 ;;   (1  5  5 0)          [╹][┃][┃][ ]
 ;;   (0  1  1 0))         [ ][╹][╹][ ]
 (define (resolver jogo)
-  (define tam-jogo (verifica-tamanho(jogo)))
-  (define possibilidades (cria-lista-possibilidades-blocos jogo))#f)
-  
+  (define tam-jogo (verifica-tamanho jogo))
+  (define possibilidades (cria-lista-possibilidades-blocos jogo))
+  (display possibilidades)
+  (iter empty possibilidades tam-jogo))
+
+(define (iter solucao possibilidades tam-jogo)
+  (cond
+    [(empty? possibilidades) solucao]
+    [(list? (first possibilidades) )
+    [else
+    [(empty? (first(first possibilidades))) #f]
+    [(seguro? (first(first(first possibilidades))) solucao tam-jogo)
+     (or (iter ((cons(first(first(first possibilidades))))) (rest(first possibilidades))) tam-jogo)
+         (iter solucao (rest(first(first possibilidades))) tam-jogo)]
+    [else (iter solucao (rest(first(first possibilidades))) tam-jogo)]))
+
+
+;; possibilidades = lista de candidatos (rotações) para cada bloco do jogo (em ordem)
+;; candidatos = lista de rotações do bloco atual = (first possibilidades)
+;; candidato = rotação atual do bloco atual = (first candidatos)
 
 ;; *****************************FIM RESOLVER*************************************
 

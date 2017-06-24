@@ -67,19 +67,23 @@
 ;; Exemplo: (rotacionar 5)
 ;;          > 10
 (define (rotacionar bloco)
-  (cond
-    [(<= bloco 7)
-     (* bloco 2)]
-    [else
-     (cond
-       [(= bloco 8) 1]
-       [(= bloco 9) 3]
-       [(= bloco 10) 5]
-       [(= bloco 11) 7]
-       [(= bloco 12) 9]
-       [(= bloco 13) 11]
-       [(= bloco 14) 13]
-       [(= bloco 15) 15])]))
+  (display (number? bloco))
+  (define bloco-binario (string->list (number->string bloco 2)))
+  (display (number? (first bloco-binario)))
+  (display (string? (first bloco-binario)))
+  (display (char? (first bloco-binario)))
+  (define zeros-esquerda (- 4 (length bloco-binario)))
+  (define S (for/list([x (in-range 0 zeros-esquerda)])
+            (* 0 x))) 
+  (define lista-bloco-binario (append S bloco-binario))
+  (display lista-bloco-binario)
+  ;;(define rotacionado (append (rest lista-bloco-binario) (first lista-bloco-binario)))
+  (define rotacionado (cons-fim (first lista-bloco-binario) (rest lista-bloco-binario)))
+  ;;(define rotacionado (list 1 0 1 0))
+  (display rotacionado)
+  (display (number? (first rotacionado)))
+  ;;(display (flatten rotacionado))
+  (bin->dec rotacionado))
     
 (define (cons-fim a lst)
   (cond
@@ -94,7 +98,7 @@
       [(empty? lst) acc]
       [else
        (cond         
-         [(equal? 0 (first lst))
+         [(equal? "0" (first lst))
           (iter (rest lst) acc (/ acc2 2))]
          [else
           (iter (rest lst) (+ acc acc2) (/ acc2 2))])]))
