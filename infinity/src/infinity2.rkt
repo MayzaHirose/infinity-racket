@@ -26,41 +26,21 @@
 ;; lista com as representações dos blocos como caracteres
 (define blocos-reps (string->list " ╹╺┗╻┃┏┣╸┛━┻┓┫┳╋"))
 
+;; *****************************INICIO VERIFICA-TAMANHO**********************************
 ;; Tamanho representa o tamanho de um jogo em altura e largura
 ;;     altura : Número - quantidade de linhas do jogo.
 ;;    largura : Número - quantidade de colunas do jogo.
 (struct tamanho (altura largura) #:transparent)
 
-(define (game-heigth lista-jogo)
+;;Jogo -> Struct tamanho
+(define (verifica-tamanho jogo)
   (cond
-    [(empty? lista-jogo) 0]
-    [else (length lista-jogo)]))
-
-(define (game-width lista-jogo)
-  (cond
-    [(empty? lista-jogo) 0]
-    [else (length (first lista-jogo))]))
-
-(define (transforma-binario lst)
-  (cond
-    [(empty? lst) empty]
-    [(list? (first lst))
-     (cons (transforma-binario (first lst))
-           (transforma-binario (rest lst)))]
+    [(empty? jogo) 0]
     [else
-     (cons (string->list (number->string (first lst) 2))
-           (transforma-binario (rest lst)))]))
+     (tamanho (length jogo)(length (first jogo)))]))
+;; *****************************FIM VERIFICA-TAMANHO**********************************
 
-(define (transforma-normal lst)
-  (cond
-    [(empty? lst) empty]
-    [(list? (first lst))
-     (cons (transforma-normal (first lst))
-           (transforma-normal (rest lst)))]
-    [else
-     (cons (string->number (first lst) 2)
-           (transforma-normal (rest lst)))]))
-  
+;; *****************************INICIO ROTACIONAR*************************************
 ;; Bloco -> Bloco
 ;; --------------
 ;; Rotaciona um bloco 90 graus em sentido horário
@@ -80,31 +60,26 @@
        [(= bloco 13) 11]
        [(= bloco 14) 13]
        [(= bloco 15) 15])]))
-    
-(define (cons-fim a lst)
+
+(define (cria-lista-possibilidades-blocos jogo)
   (cond
-    [(empty? lst) (list a)]
-    [else (cons (first lst)
-                (cons-fim a (rest lst)))]))
-;;acc é o valor acumulado referente ao valor binario em decimal, ja o acc2 é o que guarda o proximo valor da seq binária.
-;; exemplo: (0110) acc = 0, acc2 = 8 (pois da esq p dir o primeiro digito vale 8); acc = 0 acc2 = 4 ..
-(define (bin->dec lst0)
-  (define (iter lst acc acc2)
-    (cond
-      [(empty? lst) acc]
-      [else
-       (cond         
-         [(equal? 0 (first lst))
-          (iter (rest lst) acc (/ acc2 2))]
-         [else
-          (iter (rest lst) (+ acc acc2) (/ acc2 2))])]))
-  (iter lst0 0 8))
+    [(empty? jogo) empty]
+    [(list? (first jogo))
+     (cons (cria-lista-possibilidades-blocos (first jogo))
+           (cria-lista-possibilidades-blocos (rest jogo)))]
+    [else
+     (cons (cria-possibilidades-bloco (first jogo))
+           (cria-lista-possibilidades-blocos (rest jogo)))]))
 
-;;(define (bin->dec n)
-  ;;(if (zero? n)
-    ;;  n
-      ;;(+ (modulo n 10) (* 2 (bin->dec (quotient n 10))))))
+(define (cria-possibilidades-bloco bloco)
+  (define r1 (rotacionar bloco))
+  (define r2 (rotacionar r1))
+  (define r3 (rotacionar r2))
+  (list bloco r1 r2 r3))
 
+;; *****************************FIM ROTACIONAR*************************************
+
+;; *****************************INICIO ENCAIXA-H?*************************************
 ;; Bloco Bloco -> Lógico
 ;; ---------------------
 ;; Verifica se o bloco-e se encaixa horizontalmente à esquerda do bloco-d
@@ -112,7 +87,9 @@
 ;;          > #t
 (define (encaixa-h? bloco-e bloco-d) #f)
 
+;; *****************************FIM ENCAIXA-H?*************************************
 
+;; *****************************INICIO ENCAIXA-V?*************************************
 ;; Bloco Bloco -> Lógico
 ;; ---------------------
 ;; Verifica se o bloco-t se encaixa verticalmente acima do bloco-b
@@ -120,7 +97,9 @@
 ;;          > #t
 (define (encaixa-v? bloco-t bloco-b) #f)
 
+;; *****************************FIM ENCAIXA-V?*************************************
 
+;; *****************************INICIO SEGURO?*************************************
 ;; Bloco List Tamanho -> Lógico
 ;; -----------------------------
 ;; Verifica se um bloco é seguro de ser adicionado a uma solução. Ser 
@@ -147,36 +126,34 @@
 ;; não existe na solução.
 (define (seguro? bloco solucao tam) #f)
 
+;; *****************************FIM SEGURO?*************************************
+
+;; *****************************INICIO LER-JOGO*************************************
 ;; String -> Jogo
 ;; Faz a leitura e processa um jogo armazenado em arquivo.
 ;; Exemplo: (ler-jogo "testes/5.txt")
 ;;          > '((0 6 6 1) (12 15 15 6) (1 10 10 0) (0 2 1 0))
-(define (ler-jogo arquivo)
-  (transforma-para-numero(transforma-para-lista-char(port->lines(open-input-file arquivo)))))
-
-(define (transforma-para-lista-char lst)
-  (cond
-    [(empty? lst) empty]
-    [else (cons (string->list (first lst))
-                (transforma-para-lista-char (rest lst)))]))
-
-(define (transforma-para-numero lst)
-  (cond
+(define (ler-jogo arquivo) 
+;; Dica: procure pelas funções pré-definidas open-input-file e port->lines
+  (define (transforma-para-decimal lst)
+    (cond
     [(empty? lst) empty]
     [(list? (first lst))
-     (cons (transforma-para-numero (first lst))
-           (transforma-para-numero (rest lst)))]
+     (cons (transforma-para-decimal (first lst))
+           (transforma-para-decimal (rest lst)))]
     [else
-     (cons (substitui-pelo-num (first lst) blocos-reps 0)
-           (transforma-para-numero (rest lst)))]))
+     (cons (to-decimal (first lst) blocos-reps 0)
+           (transforma-para-decimal (rest lst)))]))
+  
+  (transforma-para-decimal(map string->list(port->lines(open-input-file arquivo)))))
 
-(define (substitui-pelo-num char blocos-reps n)
+(define (to-decimal char blocos-reps n)
   (cond
     [(equal? (first blocos-reps) char) n]
-    [else (substitui-pelo-num char (rest blocos-reps) (add1 n))]))
+    [else (to-decimal char (rest blocos-reps) (add1 n))]))
+;; *****************************FIM LER-JOGO*************************************
 
-;; Dica: procure pelas funções pré-definidas open-input-file e port->lines
-
+;; *****************************INICIO ESCREVER-JOGO*************************************
 ;; Jogo -> void
 ;; Escreve o jogo na tela codificado em caracteres.
 ;; Exemplo: (escrever-jogo '((6 10 14 12) (7 14 13 5) (5 7 11 13) (3 11 10 9)))
@@ -184,30 +161,12 @@
 ;;            ┣┳┫┃
 ;;            ┃┣┻┫
 ;;            ┗┻━┛
-(define (escrever-jogo jogo)
-  (display "hellow"))
+(define (escrever-jogo jogo) void)
 ;; Dica: procure pelas funções pré-definidas list->string e string-join
 
-(define (cria-lista-possibilidades jogo)
-  (cond
-    [(empty? jogo) empty]
-    [(list? (first jogo))
-     (list (cria-lista-possibilidades (first jogo))
-           (cria-lista-possibilidades (rest jogo)))]
-    [else
-     (list (cria-possibilidades-bloco (first jogo))
-           (cria-lista-possibilidades (rest jogo)))]))
+;; *****************************FIM ESCREVER-JOGO*************************************
 
-(define (cria-possibilidades-bloco bloco)
-  (display bloco)
-  (define p1 (rotacionar bloco))
-  (define p2 (rotacionar p1))
-  (define p3 (rotacionar p2))
-  (define p4 (rotacionar p3))
-  (list p1 p2 p3 p4))
-  ;;(cons 1 (cons 2 (cons 3 (cons 4 empty)))))
-
-
+;; *****************************INICIO RESOLVER*************************************
 ;; Jogo -> Jogo || #f
 ;; Resolve o jogo Infinity e o retorna resolvido. Caso não seja possível
 ;; resolvê-lo, retorna o valor falso. Por exemplo, se passado o seguinte jogo:
@@ -223,19 +182,14 @@
 ;;   (6 15 15 9)     =>   [┏][╋][╋][┛]
 ;;   (1  5  5 0)          [╹][┃][┃][ ]
 ;;   (0  1  1 0))         [ ][╹][╹][ ]
-
 (define (resolver jogo)
-  (display jogo)
-  (define tam (tamanho (game-heigth jogo) (game-width jogo)))
-  (define possibilidades (cria-lista-possibilidades jogo))
-  (display possibilidades)
-  (display possibilidades)) 
-  ;;(define jogo-binario (transforma-binario jogo)) 
-  ;;(display jogo-binario))
-  ;;(display possibilidades))
-  ;;(define jogo-normal (transforma-normal jogo-binario))
-  ;;(display jogo-normal))
+  (define tam-jogo (verifica-tamanho(jogo)))
+  (define possibilidades (cria-lista-possibilidades-blocos jogo))#f)
+  
 
+;; *****************************FIM RESOLVER*************************************
+
+;; *****************************INICIO MAIN*************************************
 ;; List String -> void
 ;; Esta é a função principal. Esta função é chamada a partir do arquivo
 ;; infinity-main.rkt
@@ -250,19 +204,9 @@
 ;; A saída desta função é a escrita na tela do jogo resolvido, representado na
 ;; forma de caracteres. Caso o jogo não possua solução, nada deve ser escrito na
 ;; tela.
-;;(define (iter solucao possibilidades)
-  ;;(cond
-    ;;[(empty? possibilidades) solucao]
-    ;;[(empty? (first possibilidades)) #f]
-    ;;[(seguro? (first (first possibilidadades)) solucao tam)
-     ;;(or (iter (adiciona candidato solucao) (remove candidatos possibilidades))
-       ;;  (iter solucao (exclui candidato possibilidades)))]
-    ;;[else (iter solucao (exclui candidato possibilidades))]))
-
 (define (main args)
-  ;;(display args)
-  (define jogo (ler-jogo args))
+  (display args)
+  (define jogo (ler-jogo args)) ;;retorna lista em decimal
   (define solucao (resolver jogo))
-  (escrever-jogo solucao)
-)
-
+  (escrever-jogo solucao))
+;; *****************************FIM MAIN*************************************
