@@ -67,16 +67,13 @@
 ;; Exemplo: (rotacionar 5)
 ;;          > 10
 (define (rotacionar bloco)
-  (display (number? bloco))
   (define bloco-binario (string->list (number->string bloco 2)))
-  (display (number? (first bloco-binario)))
-  (display (string? (first bloco-binario)))
-  (display (char? (first bloco-binario)))
   (define zeros-esquerda (- 4 (length bloco-binario)))
   (define S (for/list([x (in-range 0 zeros-esquerda)])
             (* 0 x))) 
   (define lista-bloco-binario (append S bloco-binario))
   (display lista-bloco-binario)
+  
   ;;(define rotacionado (append (rest lista-bloco-binario) (first lista-bloco-binario)))
   (define rotacionado (cons-fim (first lista-bloco-binario) (rest lista-bloco-binario)))
   ;;(define rotacionado (list 1 0 1 0))
@@ -151,8 +148,8 @@
 ;; não existe na solução.
 (define (seguro? bloco solucao tam)
   (cond
-    [(empty? solucao)
-     )
+    [(empty? solucao)false
+    ]))
 
 ;; String -> Jogo
 ;; Faz a leitura e processa um jogo armazenado em arquivo.

@@ -12,7 +12,7 @@
 ;; Você pode escolher quais testes serão executados alterando a definição de
 ;; test-suite-infinity.
 
-(require rackunit/text-ui rackunit "infinity.rkt")
+(require rackunit/text-ui rackunit "infinity2.rkt")
 
 (define test-suite-infinity
   (test-suite
