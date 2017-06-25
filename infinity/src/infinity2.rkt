@@ -61,16 +61,6 @@
        [(= bloco 14) 13]
        [(= bloco 15) 15])]))
 
-#|(define (cria-lista-possibilidades-blocos jogo)
-  (cond
-    [(empty? jogo) empty]
-    [(list? (first jogo))
-     (cons (cria-lista-possibilidades-blocos (first jogo))
-           (cria-lista-possibilidades-blocos (rest jogo)))]
-    [else
-     (cons (cria-possibilidades-bloco (first jogo))
-           (cria-lista-possibilidades-blocos (rest jogo)))]))|#
-
 (define (cria-lista-possibilidades-blocos jogo)
   (cond
     [(empty? jogo) empty]
@@ -134,8 +124,26 @@
 ;; borda direita (branco) do tabuleiro. Veja que não houve necessidade 
 ;; de se verificar o encaixe com o bloco abaixo, já que o mesmo ainda 
 ;; não existe na solução.
-(define (seguro? bloco solucao tam) #f)
+(define (seguro? bloco solucao tam)
+  (define bloco-binario (number->string bloco 2))
+  (define solucao-reversa (reverse solucao))
+  (define bloco-esq (cond [(= (length solucao) tam-largura) 0] [else (first solucao-reversa)]))
+  (define bloco-dir (cond [(<= (length solucao) tam-largura) 0] [else (first solucao-reversa)]))
+  (define bloco-cima (cond [(= (add1 (length solucao)) tam-largura) 0] [else (list-ref solucao (- (length solucao) 3))]))
+  (define bloco-baixo)
+  (cond
+    [(empty? solucao)
+       (and (encaixa-h? 0 bloco) (encaixa-v? 0 bloco))] ;;so cai aqui se for o primeiro bloco, por isso verifica se encaixa na boda vertical e em cima    
+    [else
+     (cond
+       [(borda-dir? solucao tam)
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir))]
+       [else (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco))])]))
 
+(define (borda-dir? solucao tam)
+  (cond
+    [(= (remainder (add1(length solucao)) tam-largura) 0) true]
+    [else false]))
 ;; *****************************FIM SEGURO?*************************************
 
 ;; *****************************INICIO LER-JOGO*************************************
@@ -195,19 +203,19 @@
 (define (resolver jogo)
   (define tam-jogo (verifica-tamanho jogo))
   (define possibilidades (cria-lista-possibilidades-blocos jogo))
-  (display possibilidades)
-  (iter empty possibilidades tam-jogo))
+  (display possibilidades))
+ ;; (iter empty possibilidades tam-jogo))
 
-(define (iter solucao possibilidades tam-jogo)
+#|(define (iter solucao possibilidades tam-jogo)
   (cond
     [(empty? possibilidades) solucao]
     [(list? (first possibilidades) )
     [else
-    [(empty? (first(first possibilidades))) #f]
-    [(seguro? (first(first(first possibilidades))) solucao tam-jogo)
-     (or (iter ((cons(first(first(first possibilidades))))) (rest(first possibilidades))) tam-jogo)
-         (iter solucao (rest(first(first possibilidades))) tam-jogo)]
-    [else (iter solucao (rest(first(first possibilidades))) tam-jogo)]))
+     [(empty? (first(first possibilidades))) #f]
+     [(seguro? (first(first(first possibilidades))) solucao tam-jogo)
+      (or (iter ((cons(first(first(first possibilidades))))) (rest(first possibilidades))) tam-jogo)
+      (iter solucao (rest(first(first possibilidades))) tam-jogo)]
+     [else (iter solucao (rest(first(first possibilidades))) tam-jogo)]]]))|#
 
 
 ;; possibilidades = lista de candidatos (rotações) para cada bloco do jogo (em ordem)

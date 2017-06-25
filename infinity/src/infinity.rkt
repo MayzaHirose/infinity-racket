@@ -149,7 +149,10 @@
 ;; borda direita (branco) do tabuleiro. Veja que não houve necessidade 
 ;; de se verificar o encaixe com o bloco abaixo, já que o mesmo ainda 
 ;; não existe na solução.
-(define (seguro? bloco solucao tam) #f)
+(define (seguro? bloco solucao tam)
+  (cond
+    [(empty? solucao)
+     )
 
 ;; String -> Jogo
 ;; Faz a leitura e processa um jogo armazenado em arquivo.
