@@ -85,7 +85,11 @@
 ;; Verifica se o bloco-e se encaixa horizontalmente à esquerda do bloco-d
 ;; Exemplo: (encaixa-h? 7 9)
 ;;          > #t
-(define (encaixa-h? bloco-e bloco-d) #f)
+(define (encaixa-h? bloco-e bloco-d)
+  (define bloco-e-binario (bloco->binario bloco-e))
+  (define bloco-d-binario (bloco->binario bloco-d))
+  (equal? (list-ref bloco-e-binario 2) (list-ref bloco-d-binario 0)))
+    
 
 ;; *****************************FIM ENCAIXA-H?*************************************
 
@@ -95,7 +99,29 @@
 ;; Verifica se o bloco-t se encaixa verticalmente acima do bloco-b
 ;; Exemplo: (encaixa-v? 14 11)
 ;;          > #t
-(define (encaixa-v? bloco-t bloco-b) #f)
+(define (encaixa-v? bloco-t bloco-b)
+  (define bloco-t-binario (bloco->binario bloco-t))
+  (define bloco-b-binario (bloco->binario bloco-b))
+  (equal? (list-ref bloco-t-binario 1) (list-ref bloco-b-binario 3)))
+
+
+(define (bloco->binario bloco)
+  (define list-binary (string->list (number->string bloco 2)))
+  (define zeros-esq (- 4 (length list-binary)))
+  (define (junta-zeros list-binary n)
+    (cond
+      [(zero? n) list-binary]
+      [else (junta-zeros (append (list #\0) list-binary) (sub1 n))]))
+  (junta-zeros list-binary zeros-esq))
+  #|(define lista-binario-com-zeros(junta-zeros list-binary zeros-esq))
+  (display lista-binario-com-zeros)
+  (define a (rest lista-binario-com-zeros))
+  (define b (rest a))
+  (define c (rest b))
+  (display(char? (first lista-binario-com-zeros)))
+  (display(char? (first a)))
+  (display(char? (first b)))
+  (display(char? (first c))))|#
 
 ;; *****************************FIM ENCAIXA-V?*************************************
 
@@ -127,10 +153,10 @@
 (define (seguro? bloco solucao tam)
   (define bloco-binario (number->string bloco 2))
   (define solucao-reversa (reverse solucao))
-  (define bloco-esq (cond [(= (length solucao) tam-largura) 0] [else (first solucao-reversa)]))
-  (define bloco-dir (cond [(<= (length solucao) tam-largura) 0] [else (first solucao-reversa)]))
-  (define bloco-cima (cond [(= (add1 (length solucao)) tam-largura) 0] [else (list-ref solucao (- (length solucao) 3))]))
-  (define bloco-baixo)
+  (define bloco-esq (cond [(= (length solucao) (tamanho-largura tam)) 0] [else (first solucao-reversa)]))
+  (define bloco-dir 0)
+  (define bloco-cima (cond [(= (add1 (length solucao)) (tamanho-largura tam)) 0] [else (list-ref solucao (- (length solucao) 3))]))
+  (define bloco-baixo 0)
   (cond
     [(empty? solucao)
        (and (encaixa-h? 0 bloco) (encaixa-v? 0 bloco))] ;;so cai aqui se for o primeiro bloco, por isso verifica se encaixa na boda vertical e em cima    
@@ -142,7 +168,7 @@
 
 (define (borda-dir? solucao tam)
   (cond
-    [(= (remainder (add1(length solucao)) tam-largura) 0) true]
+    [(= (remainder (add1(length solucao)) (tamanho-largura tam)) 0) true]
     [else false]))
 ;; *****************************FIM SEGURO?*************************************
 
@@ -204,7 +230,7 @@
   (define tam-jogo (verifica-tamanho jogo))
   (define possibilidades (cria-lista-possibilidades-blocos jogo))
   (display possibilidades))
- ;; (iter empty possibilidades tam-jogo))
+ ;;(iter empty possibilidades tam-jogo))
 
 #|(define (iter solucao possibilidades tam-jogo)
   (cond
