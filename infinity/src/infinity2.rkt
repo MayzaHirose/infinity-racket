@@ -228,22 +228,39 @@
 ;;   (0  1  1 0))         [ ][╹][╹][ ]
 (define (resolver jogo)
   (define tam-jogo (verifica-tamanho jogo))
-  (define possibilidades (cria-lista-possibilidades-blocos jogo))
-  (display possibilidades))
- ;;(iter empty possibilidades tam-jogo))
+  (define possibilidades (arruma-lista (cria-lista-possibilidades-blocos jogo) 0))
+  (display possibilidades)
+  (display (length possibilidades)))
+  ;(iter '() possibilidades tam-jogo))
 
 #|(define (iter solucao possibilidades tam-jogo)
   (cond
     [(empty? possibilidades) solucao]
-    [(list? (first possibilidades) )
+    [(empty? (first(first possibilidades))) #f]
+    [(seguro? (first(first(first possibilidades))) solucao tam-jogo)
+     (or (iter ((cons(first(first(first possibilidades))))) (rest(first possibilidades))) tam-jogo)
+     (iter solucao (rest(first(first possibilidades))) tam-jogo)]
+    [else (iter solucao (rest(first(first possibilidades))) tam-jogo)]])) |#
+
+(define (arruma-lista lst acc)
+  (cond
+    [(empty? lst) empty]
+    [(and (list? (first lst)) (< acc 1))
+     (append (arruma-lista (first lst) (add1 acc))
+             (arruma-lista (rest lst) 0))]
     [else
-     [(empty? (first(first possibilidades))) #f]
-     [(seguro? (first(first(first possibilidades))) solucao tam-jogo)
-      (or (iter ((cons(first(first(first possibilidades))))) (rest(first possibilidades))) tam-jogo)
-      (iter solucao (rest(first(first possibilidades))) tam-jogo)]
-     [else (iter solucao (rest(first(first possibilidades))) tam-jogo)]]]))|#
-
-
+     (cons (first lst)
+           (arruma-lista (rest lst) acc))]))
+  
+(define (aplaina lst)
+  (cond
+    [(empty? lst) empty]
+    [(list? (first lst))
+     (append (aplaina (first lst))
+             (aplaina (rest lst)))]
+    [else
+     (cons (first lst)
+           (aplaina (rest lst)))]))
 ;; possibilidades = lista de candidatos (rotações) para cada bloco do jogo (em ordem)
 ;; candidatos = lista de rotações do bloco atual = (first possibilidades)
 ;; candidato = rotação atual do bloco atual = (first candidatos)
