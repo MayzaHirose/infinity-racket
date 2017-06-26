@@ -1,5 +1,7 @@
 #lang racket
 
+;;testados -> 1 2 3 4 12 10x10
+
 ;; Este programa resolve um jogo infinity rotacionando seus blocos
 ;; até que todos se encaixem entre si. O método de resolução utilizado será
 ;; por meio de busca com retrocesso (backtracking).
@@ -46,7 +48,7 @@
 ;; Rotaciona um bloco 90 graus em sentido horário
 ;; Exemplo: (rotacionar 5)
 ;;          > 10
-(define (rotacionar bloco) ;;ARRUMAR ESTE ROTACIONAR, CÓDIGO ESTÁ NO OUTRO ARQUIVO.. ESTE FOI SO P PODER PROSSEGUIR COM O RESTO
+(define (rotacionar bloco) ;;ARRUMAR ESTE ROTACIONAR, CÓDIGO ESTÁ NO OUTRO ARQUIVO.. ESTE FOI SO P PODER PROSSEGUIR COM O RESTO POIS ESTAVA ATRASANDO
   (cond
     [(<= bloco 7)
      (* bloco 2)]
@@ -242,7 +244,7 @@
   (display "\n")
   (define (exibe-jogo jogo tam)
     (cond
-      [(empty? jogo) (display "******")]
+      [(empty? jogo) (display "***Mayza Hirose Costa - 2017***")]
       [else (display (list->string(take jogo (tamanho-largura tam))))
             (display "\n")
             (exibe-jogo (drop jogo (tamanho-largura tam)) tam)])) 
