@@ -1,4 +1,11 @@
 #lang racket
+#| Resolvedor Infinity em Racket |#
+
+#| Aluna: Mayza Yuri Hirose da Costa RA88738
+   Bacharelado em Informática
+   Universidade Estadual de Maringá - UEM - 2017
+   Disciplina: 5200 -Paradigma de Programação Lógica e Funcional
+   Professor: Lucas Pupulin Nanni |#
 
 ;; Este programa resolve um jogo infinity rotacionando seus blocos
 ;; até que todos se encaixem entre si. O método de resolução utilizado será
@@ -26,102 +33,112 @@
 ;; lista com as representações dos blocos como caracteres
 (define blocos-reps (string->list " ╹╺┗╻┃┏┣╸┛━┻┓┫┳╋"))
 
+;; *****************************INICIO TAMANHO DO JOGO**********************************
 ;; Tamanho representa o tamanho de um jogo em altura e largura
 ;;     altura : Número - quantidade de linhas do jogo.
 ;;    largura : Número - quantidade de colunas do jogo.
 (struct tamanho (altura largura) #:transparent)
 
-(define (game-heigth lista-jogo)
+;; Jogo -> Struct tamanho
+;; ----------------------
+;; Retorna uma struct tamanho com as dimensões do jogo
+;; Exemplo: (jogo->tamanho '((3 14 12) (3 11 12)))
+;;          > (tamanho 2 3)
+(define (jogo->tamanho jogo)
   (cond
-    [(empty? lista-jogo) 0]
-    [else (length lista-jogo)]))
-
-(define (game-width lista-jogo)
-  (cond
-    [(empty? lista-jogo) 0]
-    [else (length (first lista-jogo))]))
-
-(define (transforma-binario lst)
-  (cond
-    [(empty? lst) empty]
-    [(list? (first lst))
-     (cons (transforma-binario (first lst))
-           (transforma-binario (rest lst)))]
+    [(empty? jogo) 0]
     [else
-     (cons (string->list (number->string (first lst) 2))
-           (transforma-binario (rest lst)))]))
+     (tamanho (length jogo)(length (first jogo)))]))
+;; *****************************FIM TAMANHO DO JOGO**********************************
 
-(define (transforma-normal lst)
-  (cond
-    [(empty? lst) empty]
-    [(list? (first lst))
-     (cons (transforma-normal (first lst))
-           (transforma-normal (rest lst)))]
-    [else
-     (cons (string->number (first lst) 2)
-           (transforma-normal (rest lst)))]))
-  
+;; *****************************INICIO ROTACIONAR*************************************
 ;; Bloco -> Bloco
 ;; --------------
 ;; Rotaciona um bloco 90 graus em sentido horário
 ;; Exemplo: (rotacionar 5)
 ;;          > 10
-(define (rotacionar bloco)
-  (define bloco-binario (string->list (number->string bloco 2)))
-  (define zeros-esquerda (- 4 (length bloco-binario)))
-  (define S (for/list([x (in-range 0 zeros-esquerda)])
-            (* 0 x))) 
-  (define lista-bloco-binario (append S bloco-binario))
-  (display lista-bloco-binario)
-  
-  ;;(define rotacionado (append (rest lista-bloco-binario) (first lista-bloco-binario)))
-  (define rotacionado (cons-fim (first lista-bloco-binario) (rest lista-bloco-binario)))
-  ;;(define rotacionado (list 1 0 1 0))
-  (display rotacionado)
-  (display (number? (first rotacionado)))
-  ;;(display (flatten rotacionado))
-  (bin->dec rotacionado))
-    
-(define (cons-fim a lst)
+(define (rotacionar bloco) ;;ARRUMAR ESTE ROTACIONAR, CÓDIGO ESTÁ NO OUTRO ARQUIVO.. ESTE FOI SO P PODER PROSSEGUIR COM O RESTO POIS ESTAVA ATRASANDO
   (cond
-    [(empty? lst) (list a)]
-    [else (cons (first lst)
-                (cons-fim a (rest lst)))]))
-;;acc é o valor acumulado referente ao valor binario em decimal, ja o acc2 é o que guarda o proximo valor da seq binária.
-;; exemplo: (0110) acc = 0, acc2 = 8 (pois da esq p dir o primeiro digito vale 8); acc = 0 acc2 = 4 ..
-(define (bin->dec lst0)
-  (define (iter lst acc acc2)
-    (cond
-      [(empty? lst) acc]
-      [else
-       (cond         
-         [(equal? "0" (first lst))
-          (iter (rest lst) acc (/ acc2 2))]
-         [else
-          (iter (rest lst) (+ acc acc2) (/ acc2 2))])]))
-  (iter lst0 0 8))
+    [(<= bloco 7)
+     (* bloco 2)]
+    [else
+     (cond
+       [(= bloco 8) 1]
+       [(= bloco 9) 3]
+       [(= bloco 10) 5]
+       [(= bloco 11) 7]
+       [(= bloco 12) 9]
+       [(= bloco 13) 11]
+       [(= bloco 14) 13]
+       [(= bloco 15) 15])]))
 
-;;(define (bin->dec n)
-  ;;(if (zero? n)
-    ;;  n
-      ;;(+ (modulo n 10) (* 2 (bin->dec (quotient n 10))))))
+;; Jogo -> List-Possibilidades
+;; --------------
+;; Recebe uma lista em decimal referente ao jogo e cria uma lista com todas as possibilidades de rotação de cada bloco
+;; Exemplo: (jogo->possibilidades '((3 14 12) (3 11 12)))
+;;          > '(((3 6 12 9) (14 13 11 7) (12 9 3 6)) ((3 6 12 9) (11 7 14 13) (12 9 3 6)))
+(define (jogo->possibilidades jogo)
+  (cond
+    [(empty? jogo) empty]
+    [(list? (first jogo))
+     (cons (jogo->possibilidades (first jogo))
+           (jogo->possibilidades (rest jogo)))]
+    [else
+     (cons (bloco->possibilidades (first jogo))
+           (jogo->possibilidades (rest jogo)))]))
 
+;; Bloco -> List-Possibilidades
+;; --------------
+;; Recebe um bloco e retorna uma lista com as rotações dele em decimal
+;; Exemplo: (bloco->possibilidades 3)
+;;          > '(3 6 12 9)
+(define (bloco->possibilidades bloco)
+  (define r1 (rotacionar bloco))
+  (define r2 (rotacionar r1))
+  (define r3 (rotacionar r2))
+  (list bloco r1 r2 r3))
+;; *****************************FIM ROTACIONAR*************************************
+
+;; *****************************INICIO ENCAIXA-H?*************************************
 ;; Bloco Bloco -> Lógico
 ;; ---------------------
 ;; Verifica se o bloco-e se encaixa horizontalmente à esquerda do bloco-d
 ;; Exemplo: (encaixa-h? 7 9)
 ;;          > #t
-(define (encaixa-h? bloco-e bloco-d) #f)
+(define (encaixa-h? bloco-e bloco-d)
+  (define bloco-e-binario (bloco->binario bloco-e))
+  (define bloco-d-binario (bloco->binario bloco-d))
+  (equal? (list-ref bloco-e-binario 2) (list-ref bloco-d-binario 0)))
+;; *****************************FIM ENCAIXA-H?*************************************
 
-
+;; *****************************INICIO ENCAIXA-V?*************************************
 ;; Bloco Bloco -> Lógico
 ;; ---------------------
 ;; Verifica se o bloco-t se encaixa verticalmente acima do bloco-b
 ;; Exemplo: (encaixa-v? 14 11)
 ;;          > #t
-(define (encaixa-v? bloco-t bloco-b) #f)
+(define (encaixa-v? bloco-t bloco-b)
+  (define bloco-t-binario (bloco->binario bloco-t))
+  (define bloco-b-binario (bloco->binario bloco-b))
+  (equal? (list-ref bloco-t-binario 1) (list-ref bloco-b-binario 3)))
 
+;; Bloco -> Binário
+;; ---------------------
+;; Recebe um bloco e retorna sua representação em binário
+;; Exemplo: (bloco->binario 3)
+;;          > '(#\0 #\0 #\1 #\1)
+(define (bloco->binario bloco)
+  (define list-binary (string->list (number->string bloco 2)))
+  (define zeros-esq (- 4 (length list-binary)))
+  (define (junta-zeros list-binary n)
+    (cond
+      [(zero? n) list-binary]
+      [else (junta-zeros (append (list #\0) list-binary) (sub1 n))]))
+  (junta-zeros list-binary zeros-esq))
 
+;; *****************************FIM ENCAIXA-V?*************************************
+
+;; *****************************INICIO SEGURO?*************************************
 ;; Bloco List Tamanho -> Lógico
 ;; -----------------------------
 ;; Verifica se um bloco é seguro de ser adicionado a uma solução. Ser 
@@ -147,40 +164,72 @@
 ;; de se verificar o encaixe com o bloco abaixo, já que o mesmo ainda 
 ;; não existe na solução.
 (define (seguro? bloco solucao tam)
+  ;;(define solucao-reversa (reverse solucao))
+  (define bloco-dir 0);;Sempre zero pois é um bloco que sempre está na parede-dir ou não tem solucao na direita
+  (define bloco-baixo 0);;Sempre zero pois é um bloco que sempre está no térreo ou não tem solucao abaixo
+  (define bloco-esq
+    (cond
+      [(or (empty? solucao) (borda-esq? solucao tam)) 0]
+      [else (first solucao)]))
+  
+  (define bloco-cima
+    (cond
+      [(or (empty? solucao) (borda-cima? solucao tam)) 0]
+      [else (list-ref solucao (- (tamanho-largura tam) 1))]))
+      ;;[else (list-ref solucao-reversa (- (length solucao) (tamanho-largura tam)))]))
+  
   (cond
-    [(empty? solucao)false
-    ]))
+    [(borda-dir? solucao tam)
+     (cond
+       [(borda-baixo? solucao tam)
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir) (encaixa-v? bloco bloco-baixo))]
+       [else
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir))])]    
+    [else     
+     (cond
+       [(borda-baixo? solucao tam)
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-v? bloco bloco-baixo))]
+       [else
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco))])]))
 
+(define (borda-dir? solucao tam)
+  (= (remainder (add1(length solucao)) (tamanho-largura tam)) 0))
+
+(define (borda-esq? solucao tam)
+  (= (remainder (length solucao) (tamanho-largura tam)) 0))
+
+(define (borda-baixo? solucao tam)
+  (>= (+ (length solucao) (tamanho-largura tam)) (* (tamanho-altura tam) (tamanho-largura tam))))
+
+(define (borda-cima? solucao tam)
+  (< (length solucao) (tamanho-largura tam)))
+;; *****************************FIM SEGURO?*************************************
+
+;; *****************************INICIO LER-JOGO*************************************
 ;; String -> Jogo
 ;; Faz a leitura e processa um jogo armazenado em arquivo.
 ;; Exemplo: (ler-jogo "testes/5.txt")
 ;;          > '((0 6 6 1) (12 15 15 6) (1 10 10 0) (0 2 1 0))
-(define (ler-jogo arquivo)
-  (transforma-para-numero(transforma-para-lista-char(port->lines(open-input-file arquivo)))))
-
-(define (transforma-para-lista-char lst)
-  (cond
-    [(empty? lst) empty]
-    [else (cons (string->list (first lst))
-                (transforma-para-lista-char (rest lst)))]))
-
-(define (transforma-para-numero lst)
-  (cond
+(define (ler-jogo arquivo) 
+  (define (transforma-para-decimal lst)
+    (cond
     [(empty? lst) empty]
     [(list? (first lst))
-     (cons (transforma-para-numero (first lst))
-           (transforma-para-numero (rest lst)))]
+     (cons (transforma-para-decimal (first lst))
+           (transforma-para-decimal (rest lst)))]
     [else
-     (cons (substitui-pelo-num (first lst) blocos-reps 0)
-           (transforma-para-numero (rest lst)))]))
+     (cons (to-decimal (first lst) blocos-reps 0)
+           (transforma-para-decimal (rest lst)))]))
+  
+  (transforma-para-decimal(map string->list(port->lines(open-input-file (cond [(list? arquivo)(first arquivo)][else arquivo]))))))
 
-(define (substitui-pelo-num char blocos-reps n)
+(define (to-decimal char blocos-reps n)
   (cond
     [(equal? (first blocos-reps) char) n]
-    [else (substitui-pelo-num char (rest blocos-reps) (add1 n))]))
+    [else (to-decimal char (rest blocos-reps) (add1 n))]))
+;; *****************************FIM LER-JOGO*************************************
 
-;; Dica: procure pelas funções pré-definidas open-input-file e port->lines
-
+;; *****************************INICIO ESCREVER-JOGO*************************************
 ;; Jogo -> void
 ;; Escreve o jogo na tela codificado em caracteres.
 ;; Exemplo: (escrever-jogo '((6 10 14 12) (7 14 13 5) (5 7 11 13) (3 11 10 9)))
@@ -188,30 +237,38 @@
 ;;            ┣┳┫┃
 ;;            ┃┣┻┫
 ;;            ┗┻━┛
-(define (escrever-jogo jogo)
-  (display "hellow"))
 ;; Dica: procure pelas funções pré-definidas list->string e string-join
+(define (escrever-jogo jogo0 tam-jogo)
+  (define jogo-resolvido (jogo->char jogo0))
+  (define (exibe-jogo jogo tam)
+    (cond
+      [(empty? jogo) (display "")]
+      [else (display (list->string(take jogo (tamanho-largura tam))))
+            (cond
+              [(empty?(drop jogo (tamanho-largura tam))) (display "")]
+              [else (display "\n")])
+            (exibe-jogo (drop jogo (tamanho-largura tam)) tam)])) 
+  (exibe-jogo jogo-resolvido tam-jogo))
 
-(define (cria-lista-possibilidades jogo)
-  (cond
+;; Jogo -> char
+;; Recebe um jogo e transforma em uma lista de caracteres do jogo
+;; Exemplo: (jogo->char '((6 10 14 12) (7 14 13 5) (5 7 11 13) (3 11 10 9)))
+;;          > '((#\┏ #\━ #\┳ #\┓) (#\┣ #\┳ #\┫ #\┃) (#\┃ #\┣ #\┻ #\┫) (#\┗ #\┻ #\━ #\┛))
+(define (jogo->char jogo)
+    (cond
     [(empty? jogo) empty]
     [(list? (first jogo))
-     (list (cria-lista-possibilidades (first jogo))
-           (cria-lista-possibilidades (rest jogo)))]
+     (cons (jogo->char (first jogo))
+           (jogo->char (rest jogo)))]
     [else
-     (list (cria-possibilidades-bloco (first jogo))
-           (cria-lista-possibilidades (rest jogo)))]))
+     (cons (dec->char (first jogo))
+           (jogo->char (rest jogo)))]))
+  
+(define (dec->char decimal)
+  (list-ref blocos-reps decimal))
+;; *****************************FIM ESCREVER-JOGO*************************************
 
-(define (cria-possibilidades-bloco bloco)
-  (display bloco)
-  (define p1 (rotacionar bloco))
-  (define p2 (rotacionar p1))
-  (define p3 (rotacionar p2))
-  (define p4 (rotacionar p3))
-  (list p1 p2 p3 p4))
-  ;;(cons 1 (cons 2 (cons 3 (cons 4 empty)))))
-
-
+;; *****************************INICIO RESOLVER*************************************
 ;; Jogo -> Jogo || #f
 ;; Resolve o jogo Infinity e o retorna resolvido. Caso não seja possível
 ;; resolvê-lo, retorna o valor falso. Por exemplo, se passado o seguinte jogo:
@@ -227,19 +284,37 @@
 ;;   (6 15 15 9)     =>   [┏][╋][╋][┛]
 ;;   (1  5  5 0)          [╹][┃][┃][ ]
 ;;   (0  1  1 0))         [ ][╹][╹][ ]
-
 (define (resolver jogo)
-  (display jogo)
-  (define tam (tamanho (game-heigth jogo) (game-width jogo)))
-  (define possibilidades (cria-lista-possibilidades jogo))
-  (display possibilidades)
-  (display possibilidades)) 
-  ;;(define jogo-binario (transforma-binario jogo)) 
-  ;;(display jogo-binario))
-  ;;(display possibilidades))
-  ;;(define jogo-normal (transforma-normal jogo-binario))
-  ;;(display jogo-normal))
+  (define tam-jogo (jogo->tamanho jogo))
+  (define possibilidades (aplaina (jogo->possibilidades jogo)))
+  (iter '() possibilidades tam-jogo 4)) 
 
+;; Backtracking. ACC é a quantidade de possibilidades de um bloco.
+(define (iter solucao possibilidades tam-jogo acc)
+  (cond
+    [(empty? possibilidades) solucao]
+    [(zero? acc) #f]
+    [(seguro? (first possibilidades) solucao tam-jogo)
+     (or (iter (append (list (first possibilidades)) solucao) (drop possibilidades acc) tam-jogo 4)
+         (iter solucao (rest possibilidades) tam-jogo (sub1 acc)))]
+    [else (iter solucao (rest possibilidades) tam-jogo (sub1 acc))]))
+
+;; Lista aninhada -> lista Plana
+;; Aplaina uma lista aninhada
+;; Exemplo: (aplaina '((6 10 14 12) (7 14 13 5)))
+;;          > '(6 10 14 12 7 14 13 5)
+(define (aplaina lst)
+  (cond
+    [(empty? lst) empty]
+    [(list? (first lst))
+     (append (aplaina (first lst))
+             (aplaina (rest lst)))]
+    [else
+     (cons (first lst)
+           (aplaina (rest lst)))]))
+;; *****************************FIM RESOLVER*************************************
+
+;; *****************************INICIO MAIN*************************************
 ;; List String -> void
 ;; Esta é a função principal. Esta função é chamada a partir do arquivo
 ;; infinity-main.rkt
@@ -254,19 +329,9 @@
 ;; A saída desta função é a escrita na tela do jogo resolvido, representado na
 ;; forma de caracteres. Caso o jogo não possua solução, nada deve ser escrito na
 ;; tela.
-;;(define (iter solucao possibilidades)
-  ;;(cond
-    ;;[(empty? possibilidades) solucao]
-    ;;[(empty? (first possibilidades)) #f]
-    ;;[(seguro? (first (first possibilidadades)) solucao tam)
-     ;;(or (iter (adiciona candidato solucao) (remove candidatos possibilidades))
-       ;;  (iter solucao (exclui candidato possibilidades)))]
-    ;;[else (iter solucao (exclui candidato possibilidades))]))
-
 (define (main args)
-  ;;(display args)
   (define jogo (ler-jogo args))
+  (define tam-jogo (jogo->tamanho jogo))
   (define solucao (resolver jogo))
-  (escrever-jogo solucao)
-)
-
+  (escrever-jogo (reverse solucao) tam-jogo))
+;; *****************************FIM MAIN*************************************
