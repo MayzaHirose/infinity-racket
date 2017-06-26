@@ -113,15 +113,6 @@
       [(zero? n) list-binary]
       [else (junta-zeros (append (list #\0) list-binary) (sub1 n))]))
   (junta-zeros list-binary zeros-esq))
-  #|(define lista-binario-com-zeros(junta-zeros list-binary zeros-esq))
-  (display lista-binario-com-zeros)
-  (define a (rest lista-binario-com-zeros))
-  (define b (rest a))
-  (define c (rest b))
-  (display(char? (first lista-binario-com-zeros)))
-  (display(char? (first a)))
-  (display(char? (first b)))
-  (display(char? (first c))))|#
 
 ;; *****************************FIM ENCAIXA-V?*************************************
 
@@ -150,21 +141,6 @@
 ;; borda direita (branco) do tabuleiro. Veja que não houve necessidade 
 ;; de se verificar o encaixe com o bloco abaixo, já que o mesmo ainda 
 ;; não existe na solução.
-#|(define (seguro? bloco solucao tam)
-  (define solucao-reversa (reverse solucao))
-  (define bloco-dir 0);sempre zero pois sao blocos que sempre serão parede ou vazio
-  (define bloco-baixo 0);sempre zero pois sao blocos que sempre serão parede ou vazio
-  (cond
-    [(empty? solucao)
-       (and (encaixa-h? 0 bloco) (encaixa-v? 0 bloco))] ;;so cai aqui se for o primeiro bloco, por isso verifica se encaixa na boda vertical e em cima    
-    [else
-     (define bloco-esq (cond [(= (length solucao) (tamanho-largura tam)) 0] [else (first solucao-reversa)]))
-     (define bloco-cima (cond [(= (add1 (length solucao)) (tamanho-largura tam)) 0] [else (list-ref solucao (- (length solucao) 3))]))
-     (cond
-       [(borda-dir? solucao tam)
-        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir))]
-       [else (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco))])]))|#
-
 (define (seguro? bloco solucao tam)
   (define solucao-reversa (reverse solucao))
   (define bloco-dir 0);sempre zero pois sao blocos que sempre serão parede ou vazio
@@ -183,21 +159,30 @@
     [(borda-dir? solucao tam)
      (cond
        [(borda-baixo? solucao tam)
-        (display "***1***")
+        #|(display "***1***")
+        (display "blocos")
+        (display bloco-esq)
+        (display bloco-cima)|#
         (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir) (encaixa-v? bloco bloco-baixo))]
        [else
-        (display "***2***")
+        #|(display "***2***")
+        (display "blocos")
+        (display bloco-esq)
+        (display bloco-cima)|#
         (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir))])]    
     [else     
      (cond
        [(borda-baixo? solucao tam)
-        (display "***3***")
-        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-v? bloco bloco-baixo))]
-       [else
-        (display "***4***")
+        #|(display "***3***")
         (display "blocos")
         (display bloco-esq)
-        (display bloco-cima)
+        (display bloco-cima)|#
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-v? bloco bloco-baixo))]
+       [else
+        #|(display "***4***")
+        (display "blocos")
+        (display bloco-esq)
+        (display bloco-cima)|#
         (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco))])]))
 
 (define (borda-dir? solucao tam)
@@ -247,7 +232,9 @@
 ;;            ┣┳┫┃
 ;;            ┃┣┻┫
 ;;            ┗┻━┛
-(define (escrever-jogo jogo) void)
+(define (escrever-jogo jogo)
+  (display "SOLUCAO")
+  (display jogo))
 ;; Dica: procure pelas funções pré-definidas list->string e string-join
 
 ;; *****************************FIM ESCREVER-JOGO*************************************
@@ -274,12 +261,12 @@
   (iter '() possibilidades tam-jogo 4))
 
 (define (iter solucao possibilidades tam-jogo acc)
-  (display "solucao")
+  #|(display "solucao")
   (display solucao)
   (display " possibli")
   (display possibilidades)
   (display " ACC")
-  (display acc)
+  (display acc)|#
   (cond
     [(empty? possibilidades) solucao]
     [(zero? acc) #f]
@@ -287,16 +274,6 @@
      (or (iter (append solucao (list (first possibilidades))) (drop possibilidades acc) tam-jogo 4)
          (iter solucao (rest possibilidades) tam-jogo (sub1 acc)))]
     [else (iter solucao (rest possibilidades) tam-jogo (sub1 acc))]))
-
-#|(define (arruma-lista lst acc)
-  (cond
-    [(empty? lst) empty]
-    [(and (list? (first lst)) (< acc 1))
-     (append (arruma-lista (first lst) (add1 acc))
-             (arruma-lista (rest lst) 0))]
-    [else
-     (cons (first lst)
-           (arruma-lista (rest lst) acc))]))|#
 
 (define (aplaina lst)
   (cond
@@ -308,9 +285,6 @@
      (cons (first lst)
            (aplaina (rest lst)))]))
 
-;; possibilidades = lista de candidatos (rotações) para cada bloco do jogo (em ordem)
-;; candidatos = lista de rotações do bloco atual = (first possibilidades)
-;; candidato = rotação atual do bloco atual = (first candidatos)
 
 ;; *****************************FIM RESOLVER*************************************
 
