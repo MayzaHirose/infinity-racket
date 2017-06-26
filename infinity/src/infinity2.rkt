@@ -46,7 +46,7 @@
 ;; Rotaciona um bloco 90 graus em sentido horário
 ;; Exemplo: (rotacionar 5)
 ;;          > 10
-(define (rotacionar bloco)
+(define (rotacionar bloco) ;;ARRUMAR ESTE ROTACIONAR, CÓDIGO ESTÁ NO OUTRO ARQUIVO.. ESTE FOI SO P PODER PROSSEGUIR COM O RESTO
   (cond
     [(<= bloco 7)
      (* bloco 2)]
@@ -103,7 +103,6 @@
   (define bloco-t-binario (bloco->binario bloco-t))
   (define bloco-b-binario (bloco->binario bloco-b))
   (equal? (list-ref bloco-t-binario 1) (list-ref bloco-b-binario 3)))
-
 
 (define (bloco->binario bloco)
   (define list-binary (string->list (number->string bloco 2)))
@@ -232,11 +231,35 @@
 ;;            ┣┳┫┃
 ;;            ┃┣┻┫
 ;;            ┗┻━┛
-(define (escrever-jogo jogo)
-  (display "SOLUCAO")
-  (display jogo))
 ;; Dica: procure pelas funções pré-definidas list->string e string-join
+(define (escrever-jogo jogo0 tam-jogo)
+  (define jogo-resolvido (transforma-para-char jogo0))
+  (display "SOLUCAO DEC -> ")
+  (display jogo0)
+  (display "\n")
+  (display "SOLUCAO CHR -> ")
+  (display jogo-resolvido)
+  (display "\n")
+  (define (exibe-jogo jogo tam)
+    (cond
+      [(empty? jogo) (display "******")]
+      [else (display (list->string(take jogo (tamanho-largura tam))))
+            (display "\n")
+            (exibe-jogo (drop jogo (tamanho-largura tam)) tam)])) 
+  (exibe-jogo jogo-resolvido tam-jogo))
 
+(define (transforma-para-char jogo)
+    (cond
+    [(empty? jogo) empty]
+    [(list? (first jogo))
+     (cons (transforma-para-char (first jogo))
+           (transforma-para-char (rest jogo)))]
+    [else
+     (cons (to-char (first jogo))
+           (transforma-para-char (rest jogo)))]))
+  
+(define (to-char decimal)
+  (list-ref blocos-reps decimal))
 ;; *****************************FIM ESCREVER-JOGO*************************************
 
 ;; *****************************INICIO RESOLVER*************************************
@@ -305,6 +328,7 @@
 ;; tela.
 (define (main args)
   (define jogo (ler-jogo args)) ;;retorna lista em decimal
+  (define tam-jogo (verifica-tamanho jogo))
   (define solucao (resolver jogo))
-  (escrever-jogo solucao))
+  (escrever-jogo solucao tam-jogo))
 ;; *****************************FIM MAIN*************************************
