@@ -171,26 +171,33 @@
   (define bloco-baixo 0);sempre zero pois sao blocos que sempre serão parede ou vazio
   (define bloco-esq
     (cond
-      [(or (empty? solucao) borda-esq?) 0]
+      [(or (empty? solucao) (borda-esq? solucao tam)) 0]
       [else (first solucao-reversa)]))
   
   (define bloco-cima
     (cond
-      [(or (empty? solucao) borda-cima?) 0]
+      [(or (empty? solucao) (borda-cima? solucao tam)) 0]
       [else (list-ref solucao (- (length solucao) (tamanho-largura tam)))]))
   
   (cond
     [(borda-dir? solucao tam)
      (cond
        [(borda-baixo? solucao tam)
+        (display "***1***")
         (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir) (encaixa-v? bloco bloco-baixo))]
        [else
+        (display "***2***")
         (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir))])]    
     [else     
      (cond
        [(borda-baixo? solucao tam)
+        (display "***3***")
         (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-v? bloco bloco-baixo))]
-       [else 
+       [else
+        (display "***4***")
+        (display "blocos")
+        (display bloco-esq)
+        (display bloco-cima)
         (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco))])]))
 
 (define (borda-dir? solucao tam)
@@ -264,21 +271,24 @@
 (define (resolver jogo)
   (define tam-jogo (verifica-tamanho jogo))
   (define possibilidades (aplaina (cria-lista-possibilidades-blocos jogo)))
-  (display possibilidades)
   (iter '() possibilidades tam-jogo 4))
 
 (define (iter solucao possibilidades tam-jogo acc)
-  (display "solucao ")
+  (display "solucao")
   (display solucao)
+  (display " possibli")
+  (display possibilidades)
+  (display " ACC")
+  (display acc)
   (cond
     [(empty? possibilidades) solucao]
     [(zero? acc) #f]
-    [(seguro? (list-ref possibilidades 0) solucao tam-jogo)
-     (or (iter (append solucao (list (list-ref possibilidades 0))) (drop possibilidades acc) tam-jogo 4)
+    [(seguro? (first possibilidades) solucao tam-jogo)
+     (or (iter (append solucao (list (first possibilidades))) (drop possibilidades acc) tam-jogo 4)
          (iter solucao (rest possibilidades) tam-jogo (sub1 acc)))]
     [else (iter solucao (rest possibilidades) tam-jogo (sub1 acc))]))
 
-(define (arruma-lista lst acc)
+#|(define (arruma-lista lst acc)
   (cond
     [(empty? lst) empty]
     [(and (list? (first lst)) (< acc 1))
@@ -286,7 +296,7 @@
              (arruma-lista (rest lst) 0))]
     [else
      (cons (first lst)
-           (arruma-lista (rest lst) acc))]))
+           (arruma-lista (rest lst) acc))]))|#
 
 (define (aplaina lst)
   (cond
@@ -320,7 +330,6 @@
 ;; forma de caracteres. Caso o jogo não possua solução, nada deve ser escrito na
 ;; tela.
 (define (main args)
-  (display args)
   (define jogo (ler-jogo args)) ;;retorna lista em decimal
   (define solucao (resolver jogo))
   (escrever-jogo solucao))
