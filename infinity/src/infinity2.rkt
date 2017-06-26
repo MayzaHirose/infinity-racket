@@ -150,26 +150,61 @@
 ;; borda direita (branco) do tabuleiro. Veja que não houve necessidade 
 ;; de se verificar o encaixe com o bloco abaixo, já que o mesmo ainda 
 ;; não existe na solução.
-(define (seguro? bloco solucao tam)
-  (define bloco-binario (number->string bloco 2))
+#|(define (seguro? bloco solucao tam)
   (define solucao-reversa (reverse solucao))
-  (define bloco-esq (cond [(= (length solucao) (tamanho-largura tam)) 0] [else (first solucao-reversa)]))
-  (define bloco-dir 0)
-  (define bloco-cima (cond [(= (add1 (length solucao)) (tamanho-largura tam)) 0] [else (list-ref solucao (- (length solucao) 3))]))
-  (define bloco-baixo 0)
+  (define bloco-dir 0);sempre zero pois sao blocos que sempre serão parede ou vazio
+  (define bloco-baixo 0);sempre zero pois sao blocos que sempre serão parede ou vazio
   (cond
     [(empty? solucao)
        (and (encaixa-h? 0 bloco) (encaixa-v? 0 bloco))] ;;so cai aqui se for o primeiro bloco, por isso verifica se encaixa na boda vertical e em cima    
     [else
+     (define bloco-esq (cond [(= (length solucao) (tamanho-largura tam)) 0] [else (first solucao-reversa)]))
+     (define bloco-cima (cond [(= (add1 (length solucao)) (tamanho-largura tam)) 0] [else (list-ref solucao (- (length solucao) 3))]))
      (cond
        [(borda-dir? solucao tam)
         (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir))]
-       [else (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco))])]))
+       [else (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco))])]))|#
+
+(define (seguro? bloco solucao tam)
+  (define solucao-reversa (reverse solucao))
+  (define bloco-dir 0);sempre zero pois sao blocos que sempre serão parede ou vazio
+  (define bloco-baixo 0);sempre zero pois sao blocos que sempre serão parede ou vazio
+  (define bloco-esq
+    (cond
+      [(or (empty? solucao) borda-esq?) 0]
+      [else (first solucao-reversa)]))
+  
+  (define bloco-cima
+    (cond
+      [(or (empty? solucao) borda-cima?) 0]
+      [else (list-ref solucao (- (length solucao) (tamanho-largura tam)))]))
+  
+  (cond
+    [(borda-dir? solucao tam)
+     (cond
+       [(borda-baixo? solucao tam)
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir) (encaixa-v? bloco bloco-baixo))]
+       [else
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-h? bloco bloco-dir))])]    
+    [else     
+     (cond
+       [(borda-baixo? solucao tam)
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco) (encaixa-v? bloco bloco-baixo))]
+       [else 
+        (and (encaixa-h? bloco-esq bloco) (encaixa-v? bloco-cima bloco))])]))
 
 (define (borda-dir? solucao tam)
-  (cond
-    [(= (remainder (add1(length solucao)) (tamanho-largura tam)) 0) true]
-    [else false]))
+  (= (remainder (add1(length solucao)) (tamanho-largura tam)) 0))
+
+(define (borda-esq? solucao tam)
+  (= (remainder (length solucao) (tamanho-largura tam)) 0))
+
+(define (borda-baixo? solucao tam)
+  (>= (+ (length solucao) (tamanho-largura tam)) (* (tamanho-altura tam) (tamanho-largura tam))))
+
+(define (borda-cima? solucao tam)
+  (< (length solucao) (tamanho-largura tam)))
+
 ;; *****************************FIM SEGURO?*************************************
 
 ;; *****************************INICIO LER-JOGO*************************************
@@ -228,19 +263,20 @@
 ;;   (0  1  1 0))         [ ][╹][╹][ ]
 (define (resolver jogo)
   (define tam-jogo (verifica-tamanho jogo))
-  (define possibilidades (arruma-lista (cria-lista-possibilidades-blocos jogo) 0))
+  (define possibilidades (aplaina (cria-lista-possibilidades-blocos jogo)))
   (display possibilidades)
-  (display (length possibilidades)))
-  ;(iter '() possibilidades tam-jogo))
+  (iter '() possibilidades tam-jogo 4))
 
-#|(define (iter solucao possibilidades tam-jogo)
+(define (iter solucao possibilidades tam-jogo acc)
+  (display "solucao ")
+  (display solucao)
   (cond
     [(empty? possibilidades) solucao]
-    [(empty? (first(first possibilidades))) #f]
-    [(seguro? (first(first(first possibilidades))) solucao tam-jogo)
-     (or (iter ((cons(first(first(first possibilidades))))) (rest(first possibilidades))) tam-jogo)
-     (iter solucao (rest(first(first possibilidades))) tam-jogo)]
-    [else (iter solucao (rest(first(first possibilidades))) tam-jogo)]])) |#
+    [(zero? acc) #f]
+    [(seguro? (list-ref possibilidades 0) solucao tam-jogo)
+     (or (iter (append solucao (list (list-ref possibilidades 0))) (drop possibilidades acc) tam-jogo 4)
+         (iter solucao (rest possibilidades) tam-jogo (sub1 acc)))]
+    [else (iter solucao (rest possibilidades) tam-jogo (sub1 acc))]))
 
 (define (arruma-lista lst acc)
   (cond
@@ -251,7 +287,7 @@
     [else
      (cons (first lst)
            (arruma-lista (rest lst) acc))]))
-  
+
 (define (aplaina lst)
   (cond
     [(empty? lst) empty]
@@ -261,6 +297,7 @@
     [else
      (cons (first lst)
            (aplaina (rest lst)))]))
+
 ;; possibilidades = lista de candidatos (rotações) para cada bloco do jogo (em ordem)
 ;; candidatos = lista de rotações do bloco atual = (first possibilidades)
 ;; candidato = rotação atual do bloco atual = (first candidatos)
