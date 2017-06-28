@@ -96,7 +96,11 @@
   (define r1 (rotacionar bloco))
   (define r2 (rotacionar r1))
   (define r3 (rotacionar r2))
-  (list bloco r1 r2 r3))
+  (cond [(= 15 bloco) (list bloco 16 16 16)]
+        [(= 5 bloco) (list bloco 10 16 16)]
+        [(= 10 bloco) (list bloco 5 16 16)]
+        [(= 0 bloco) (list bloco 16 16 16)]
+        [else (list bloco r1 r2 r3)]))
 ;; *****************************FIM ROTACIONAR*************************************
 
 ;; *****************************INICIO ENCAIXA-H?*************************************
@@ -164,7 +168,6 @@
 ;; de se verificar o encaixe com o bloco abaixo, já que o mesmo ainda 
 ;; não existe na solução.
 (define (seguro? bloco solucao tam)
-  ;;(define solucao-reversa (reverse solucao))
   (define bloco-dir 0);;Sempre zero pois é um bloco que sempre está na parede-dir ou não tem solucao na direita
   (define bloco-baixo 0);;Sempre zero pois é um bloco que sempre está no térreo ou não tem solucao abaixo
   (define bloco-esq
@@ -176,7 +179,6 @@
     (cond
       [(or (empty? solucao) (borda-cima? solucao tam)) 0]
       [else (list-ref solucao (- (tamanho-largura tam) 1))]))
-      ;;[else (list-ref solucao-reversa (- (length solucao) (tamanho-largura tam)))]))
   
   (cond
     [(borda-dir? solucao tam)
@@ -294,6 +296,7 @@
   (cond
     [(empty? possibilidades) solucao]
     [(zero? acc) #f]
+    [(= 16 (first possibilidades)) #f]
     [(seguro? (first possibilidades) solucao tam-jogo)
      (or (iter (append (list (first possibilidades)) solucao) (drop possibilidades acc) tam-jogo 4)
          (iter solucao (rest possibilidades) tam-jogo (sub1 acc)))]
