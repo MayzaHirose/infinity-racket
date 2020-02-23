@@ -2,10 +2,10 @@
 
 Trabalho da disciplina Paradigma de Programação lógica e funcional para resolução do jogo Infinity Loop utilizando a linguagem Racket
 
-#####EDIT:
+##### EDIT:
 Estou implementando a solução também na linguagem ___Clojure__, e pode ser encontrado em https://github.com/MayzaHirose/clojure-infinity-loop-puzzle-solver
 
-#####Running InfinityLoop solver:
+##### Running InfinityLoop solver:
 
 1. Install ___Racket___ (https://docs.racket-lang.org/quick/index.html)
 2. Execute ___DrRacket IDE___ present at ___bin___ directory
